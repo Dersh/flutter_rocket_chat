@@ -1,3 +1,5 @@
+import 'dart:async';
+
 import 'package:flutter/material.dart';
 import 'package:flutter_rocket_chat/model/profile.dart';
 import 'model/auth.dart';
@@ -37,10 +39,12 @@ class _MyHomePageState extends State<MyHomePage> {
   final String pwd = "Welcome01";
   int _counter = 0;
   String _msg = "";
+  var _controller = new StreamController<int>();
 
   void _incrementCounter() {
     setState(() {
       _counter++;
+      _controller.add(_counter);
       _msg = "";
     });
   }
@@ -68,6 +72,22 @@ class _MyHomePageState extends State<MyHomePage> {
               '$_counter',
               style: Theme.of(context).textTheme.headline4,
             ),
+            StreamBuilder(
+                stream: _controller.stream,
+                //initialData: -1,
+                builder: (context, snapshot) {
+                  if (snapshot.hasData) {
+                    return Text(
+                      snapshot.data.toString(),
+                      style: Theme.of(context).textTheme.headline4,
+                    );
+                  } else if (snapshot.hasError) {
+                    return Text("Error");
+                  }
+                  return Center(
+                    child: CircularProgressIndicator(),
+                  );
+                }),
             // пользовательский код
             FlatButton(
               child: Text('Run Future'),
@@ -78,18 +98,21 @@ class _MyHomePageState extends State<MyHomePage> {
             Text(
               '$_msg',
             ),
-            FutureBuilder(
-                future: auth,
-                builder: (context, snapshot) {
-                  if (snapshot.hasData) {
-                    return Text(snapshot.data.token);
-                  } else if (snapshot.hasError) {
-                    return Text("Error");
-                  }
-                  return Center(
-                    child: CircularProgressIndicator(),
-                  );
-                })
+            Padding(
+              padding: EdgeInsets.all(20),
+              child: FutureBuilder(
+                  future: auth,
+                  builder: (context, snapshot) {
+                    if (snapshot.hasData) {
+                      return Text('Auth-Token: ${snapshot.data.token}');
+                    } else if (snapshot.hasError) {
+                      return Text("Error");
+                    }
+                    return Center(
+                      child: CircularProgressIndicator(),
+                    );
+                  }),
+            )
           ],
         ),
       ),
